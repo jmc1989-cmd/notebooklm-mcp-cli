@@ -1,6 +1,6 @@
 """Connection repair MCP tool — fix_connection."""
 
-from ._utils import ResultDict, error_result, logged_tool
+from ._utils import ResultDict, logged_tool
 
 
 @logged_tool()

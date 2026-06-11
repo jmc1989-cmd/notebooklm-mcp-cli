@@ -98,8 +98,8 @@ def fix_connection(
         console.print(f"  Detail: [dim]{diagnosis['description']}[/dim]")
 
     if not diagnosis["recoverable"]:
-        console.print(f"\n[red]✗ Cannot repair automatically.[/red]")
-        console.print(f"\n[yellow]Action required:[/yellow]")
+        console.print("\n[red]✗ Cannot repair automatically.[/red]")
+        console.print("\n[yellow]Action required:[/yellow]")
         console.print(f"  {diagnosis['action']}")
         raise typer.Exit(1)
 
@@ -110,10 +110,10 @@ def fix_connection(
     repair = repair_connection(profile=profile)
 
     if not repair["success"]:
-        console.print(f"[red]✗[/red] All recovery layers failed.")
+        console.print("[red]✗[/red] All recovery layers failed.")
         if verbose:
             console.print(f"  [dim]{repair['message']}[/dim]")
-        console.print(f"\n[yellow]Next step:[/yellow]")
+        console.print("\n[yellow]Next step:[/yellow]")
         console.print(f"  {repair.get('next_step', 'Run nlm login to re-authenticate.')}")
         raise typer.Exit(1)
 
@@ -132,7 +132,7 @@ def fix_connection(
         console.print(f"  [green]✓[/green] {verification['message']}")
         console.print("\n[green]Connection restored.[/green] You can now retry your operation.")
     else:
-        console.print(f"  [yellow]⚠[/yellow]  Tokens refreshed but verification failed.")
+        console.print("  [yellow]⚠[/yellow]  Tokens refreshed but verification failed.")
         console.print(f"  [dim]{verification.get('error', '')}[/dim]")
         console.print("\n  Try the original operation; if it still fails run [cyan]nlm login[/cyan].")
         raise typer.Exit(2)
