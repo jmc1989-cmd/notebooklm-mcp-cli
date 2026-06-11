@@ -13,6 +13,7 @@ from notebooklm_tools.cli.commands.chat import app as chat_app
 from notebooklm_tools.cli.commands.config import app as config_app
 from notebooklm_tools.cli.commands.cross import app as cross_app
 from notebooklm_tools.cli.commands.doctor import app as doctor_app
+from notebooklm_tools.cli.commands.fix_connection import app as fix_connection_app
 from notebooklm_tools.cli.commands.download import app as download_app
 from notebooklm_tools.cli.commands.export import app as export_app
 from notebooklm_tools.cli.commands.label import app as label_app
@@ -694,6 +695,7 @@ app.add_typer(export_app, name="export", help="Export artifacts to Google Docs/S
 app.add_typer(skill_app, name="skill", help="Install skills for AI tools")
 app.add_typer(setup_app, name="setup", help="Configure MCP server for AI tools")
 app.add_typer(doctor_app, name="doctor", help="Diagnose installation and configuration")
+app.add_typer(fix_connection_app, name="fix-connection", help="Repair connection issues with NotebookLM")
 app.add_typer(batch_app, name="batch", help="Batch operations across notebooks")
 app.add_typer(cross_app, name="cross", help="Cross-notebook queries")
 app.add_typer(pipeline_app, name="pipeline", help="Run multi-step pipelines")
