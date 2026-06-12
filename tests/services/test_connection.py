@@ -97,10 +97,25 @@ class TestDiagnoseConnectionError:
 class TestRepairConnection:
     """Test the layered repair logic with mocked client/auth."""
 
+    @patch("notebooklm_tools.services.connection.verify_connection")
     @patch("notebooklm_tools.mcp.tools._utils.reset_client")
     @patch("notebooklm_tools.mcp.tools._utils.get_client")
-    def test_layer1_success(self, mock_get_client, _mock_reset):
-        """Layer 1 succeeds when CSRF refresh works."""
+    def test_precheck_already_working_skips_repair(
+        self, _mock_get_client, _mock_reset, mock_verify
+    ):
+        """If connection already works, repair returns immediately without touching the client."""
+        mock_verify.return_value = {"success": True, "notebook_count": 5, "message": "ok"}
+        result = repair_connection()
+        assert result["success"] is True
+        assert result["layer"] == 0
+        assert "already working" in result["message"]
+
+    @patch("notebooklm_tools.services.connection.verify_connection")
+    @patch("notebooklm_tools.mcp.tools._utils.reset_client")
+    @patch("notebooklm_tools.mcp.tools._utils.get_client")
+    def test_layer1_success(self, mock_get_client, _mock_reset, mock_verify):
+        """Layer 1 succeeds when CSRF refresh works (no client reset before refresh)."""
+        mock_verify.return_value = {"success": False, "error": "expired"}
         client = MagicMock()
         mock_get_client.return_value = client
 
@@ -109,14 +124,18 @@ class TestRepairConnection:
         assert result["success"] is True
         assert result["layer"] == 1
         client._refresh_auth_tokens.assert_called_once()
+        # reset_client must NOT have been called before the refresh attempt
+        _mock_reset.assert_not_called()
 
+    @patch("notebooklm_tools.services.connection.verify_connection")
     @patch("notebooklm_tools.core.auth.load_cached_tokens")
     @patch("notebooklm_tools.mcp.tools._utils.reset_client")
     @patch("notebooklm_tools.mcp.tools._utils.get_client")
     def test_layer2_success_after_layer1_fails(
-        self, mock_get_client, _mock_reset, mock_load
+        self, mock_get_client, _mock_reset, mock_load, mock_verify
     ):
         """Layer 1 raises, Layer 2 reloads from disk successfully."""
+        mock_verify.return_value = {"success": False, "error": "expired"}
         client = MagicMock()
         client._refresh_auth_tokens.side_effect = ValueError("auth expired")
         mock_get_client.return_value = client
@@ -127,14 +146,16 @@ class TestRepairConnection:
         assert result["success"] is True
         assert result["layer"] == 2
 
+    @patch("notebooklm_tools.services.connection.verify_connection")
     @patch("notebooklm_tools.utils.cdp.run_headless_auth")
     @patch("notebooklm_tools.core.auth.load_cached_tokens", return_value=None)
     @patch("notebooklm_tools.mcp.tools._utils.reset_client")
     @patch("notebooklm_tools.mcp.tools._utils.get_client")
     def test_layer3_headless_success(
-        self, mock_get_client, _mock_reset, _mock_load, mock_headless
+        self, mock_get_client, _mock_reset, _mock_load, mock_headless, mock_verify
     ):
         """Layers 1+2 fail, Layer 3 headless auth succeeds."""
+        mock_verify.return_value = {"success": False, "error": "expired"}
         client = MagicMock()
         client._refresh_auth_tokens.side_effect = ValueError("auth expired")
         mock_get_client.return_value = client
@@ -145,14 +166,16 @@ class TestRepairConnection:
         assert result["success"] is True
         assert result["layer"] == 3
 
+    @patch("notebooklm_tools.services.connection.verify_connection")
     @patch("notebooklm_tools.utils.cdp.run_headless_auth", return_value=None)
     @patch("notebooklm_tools.core.auth.load_cached_tokens", return_value=None)
     @patch("notebooklm_tools.mcp.tools._utils.reset_client")
     @patch("notebooklm_tools.mcp.tools._utils.get_client")
     def test_all_layers_fail(
-        self, mock_get_client, _mock_reset, _mock_load, _mock_headless
+        self, mock_get_client, _mock_reset, _mock_load, _mock_headless, mock_verify
     ):
         """All three layers fail — returns failure with next_step."""
+        mock_verify.return_value = {"success": False, "error": "expired"}
         client = MagicMock()
         client._refresh_auth_tokens.side_effect = ValueError("auth expired")
         mock_get_client.return_value = client
@@ -164,14 +187,16 @@ class TestRepairConnection:
         assert "next_step" in result
         assert "auth expired" in result["message"]
 
+    @patch("notebooklm_tools.services.connection.verify_connection")
     @patch("notebooklm_tools.core.auth.AuthManager")
     @patch("notebooklm_tools.core.auth.load_cached_tokens")
     @patch("notebooklm_tools.mcp.tools._utils.reset_client")
     @patch("notebooklm_tools.mcp.tools._utils.get_client")
     def test_layer2_uses_named_profile(
-        self, mock_get_client, _mock_reset, _mock_load, mock_auth_manager
+        self, mock_get_client, _mock_reset, _mock_load, mock_auth_manager, mock_verify
     ):
         """When a profile is given, Layer 2 loads that specific profile."""
+        mock_verify.return_value = {"success": False, "error": "expired"}
         client = MagicMock()
         client._refresh_auth_tokens.side_effect = ValueError("auth expired")
         mock_get_client.return_value = client

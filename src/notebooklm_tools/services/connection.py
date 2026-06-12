@@ -133,9 +133,18 @@ def repair_connection(profile: str | None = None) -> dict[str, Any]:
     """
     from notebooklm_tools.mcp.tools._utils import get_client, reset_client
 
-    # Layer 1: Force CSRF/session token refresh from live NotebookLM page
+    # Pre-check: if the connection already works, skip repair entirely
+    pre = verify_connection()
+    if pre["success"]:
+        return {
+            "success": True,
+            "layer": 0,
+            "message": "Connection is already working — no repair needed.",
+        }
+
+    # Layer 1: Force CSRF/session token refresh from live NotebookLM page.
+    # Do NOT reset the client first — refresh in-place to preserve working state.
     try:
-        reset_client()
         client = get_client()
         client._refresh_auth_tokens()  # type: ignore[attr-defined]
         return {
