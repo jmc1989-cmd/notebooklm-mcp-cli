@@ -2,6 +2,7 @@
 
 # Import all tools from submodules for registration
 from .auth import refresh_auth, save_auth_tokens
+from .connection import fix_connection
 from .batch import batch
 from .chat import (
     chat_configure,
@@ -54,9 +55,10 @@ from .studio import (
 __all__ = [
     # Downloads (1 consolidated)
     "download_artifact",
-    # Auth (2)
+    # Auth (3)
     "refresh_auth",
     "save_auth_tokens",
+    "fix_connection",
     # Notebooks (6)
     "notebook_list",
     "notebook_get",

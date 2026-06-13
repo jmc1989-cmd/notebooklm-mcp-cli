@@ -166,6 +166,7 @@ src/notebooklm_tools/
 | `notebook_share_invite` | Invite collaborator by email |
 | `save_auth_tokens` | Save tokens extracted via Chrome DevTools MCP |
 | `refresh_auth` | Reload auth tokens or run headless auth |
+| `fix_connection` | Diagnose and auto-repair connection/auth failures (3 recovery layers) |
 | `note_create` | Create a note in a notebook |
 | `note_list` | List all notes in a notebook |
 | `note_update` | Update a note's content or title |
